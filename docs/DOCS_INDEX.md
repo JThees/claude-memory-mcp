@@ -1,6 +1,6 @@
 # Documentation Index
 
-> **Last updated**: February 14, 2026 — Post audit remediation
+> **Last updated**: March 2, 2026 — Post mutation-testing campaign
 
 This is the master table of contents for all Claude Memory MCP documentation. Use this to find the right doc, and to know **when each doc needs updating**.
 
@@ -10,8 +10,9 @@ This is the master table of contents for all Claude Memory MCP documentation. Us
 | ------------------------------------- | ---------------------------------- | ------ |
 | Source modules (`src/claude_memory/`) | 29                                 | Feb 14 |
 | Scripts (`scripts/`)                  | 42                                 | Feb 14 |
-| Unit tests                            | 463                                | Feb 14 |
-| Coverage                              | 97.86%                             | Feb 14 |
+| Unit tests                            | 784                                | Mar 2  |
+| Test files                            | 55                                 | Mar 2  |
+| Coverage                              | ~98%                               | Mar 2  |
 | MCP tools                             | 29                                 | Feb 14 |
 | FalkorDB nodes (post-P0 brain)        | 700                                | Feb 14 |
 | FalkorDB edges (post-P0 brain)        | 1253                               | Feb 14 |
@@ -61,10 +62,70 @@ This is the master table of contents for all Claude Memory MCP documentation. Us
 
 Contains structural analyses and reports from past audits. Reference only.
 
-## Stale Doc? — How to Audit
+## Documentation Update Protocol (MANDATORY)
 
-1. **Check the Canonical Stats table** above — are all numbers current?
-2. **Run the Gold Stack**: `tox` — if test counts change, update stats
-3. **Diff source files vs CODE_INVENTORY.md**: any new/removed modules?
-4. **Diff `server.py` tool registrations vs MCP_TOOL_REFERENCE.md**: any new tools?
-5. **Update this index** if any doc is added or removed
+> **No doc update ships without a structural diff against the codebase.**
+
+### Phase 1: Structural Diff (Trust Nothing)
+
+Run these commands from the project root. If any produce output, the docs are **stale**.
+
+```powershell
+# 1. Source modules — compare actual files to CODE_INVENTORY.md
+$inv = Get-Content docs/CODE_INVENTORY.md | Select-String "\w+\.py\s*\|" |
+  ForEach-Object { if ($_.Line -match '`(\w+\.py)`') { $matches[1] } } |
+  Sort-Object -Unique
+$actual = Get-ChildItem src/claude_memory -Filter "*.py" |
+  Select-Object -ExpandProperty Name | Sort-Object -Unique
+Write-Host "PHANTOM (in docs, not on disk):"
+$inv | Where-Object { $_ -notin $actual }
+Write-Host "MISSING (on disk, not in docs):"
+$actual | Where-Object { $_ -notin $inv }
+
+# 2. Test files — cross-check inventory vs disk
+$tinv = Get-Content docs/CODE_INVENTORY.md |
+  Select-String "test_\w+\.py" |
+  ForEach-Object { if ($_.Line -match '(test_[\w]+\.py)') { $matches[1] } } |
+  Sort-Object -Unique
+$tactual = Get-ChildItem tests -Recurse -Filter "test_*.py" |
+  Select-Object -ExpandProperty Name | Sort-Object -Unique
+Write-Host "PHANTOM TESTS:" ; $tinv | Where-Object { $_ -notin $tactual }
+Write-Host "MISSING TESTS:" ; $tactual | Where-Object { $_ -notin $tinv }
+
+# 3. Script files — cross-check inventory vs disk
+# (same pattern as above, adapted for scripts/)
+
+# 4. MCP tool count — decorator + runtime registrations
+$decorators = (Select-String -Path src/claude_memory/server.py -Pattern "@mcp.tool").Count
+$runtime = (Select-String -Path src/claude_memory/tools_extra.py -Pattern "mcp.tool\(\)").Count
+Write-Host "MCP tools: $($decorators + $runtime) (server=$decorators, extra=$runtime)"
+
+# 5. Test count — actual passing tests
+python -m pytest tests/unit/ -q --no-header --tb=no 2>&1 | Select-Object -Last 1
+```
+
+### Phase 2: Update Cascade (Order Matters)
+
+1. **`DOCS_INDEX.md`** — Update the Canonical Stats table **first** (single source of truth)
+2. **`CODE_INVENTORY.md`** — Add/remove file entries, update totals and date
+3. **`ARCHITECTURE.md`** — Update test count in Gold Stack tier table
+4. **`CHANGELOG.md`** — Add entry under `[Unreleased]`, update test count in Changed
+5. **`UPGRADE_LOG.md`** — Update the Cumulative Summary table at the bottom
+6. **`README.md`** — Update feature bullets if test count or quality claims changed
+7. **`adr/*.md`** — Grep for stale test counts (`grep -r "460\|463\|784" docs/adr/`)
+8. **`MAINTENANCE_MANUAL.md`** / **`USER_MANUAL.md`** — Bump `Last updated` date
+9. **`GOTCHAS.md`** — Add any new gotchas discovered during the work
+10. **`MCP_TOOL_REFERENCE.md`** — Update if tools were added/removed/changed
+
+### Phase 3: Verification
+
+```powershell
+# Grep for any remaining stale numbers (adapt pattern to old values)
+Select-String -Path docs/*.md,README.md -Pattern "OLD_NUMBER" -CaseSensitive
+
+# Confirm no phantom/missing files remain
+# (re-run Phase 1 commands — output must be empty)
+```
+
+> [!CAUTION]
+> **`structural_analysis.md`** is a frozen pre-remediation baseline (Feb 13, 2026). Do NOT update it. It is a historical snapshot — all gaps listed in it have been fixed.

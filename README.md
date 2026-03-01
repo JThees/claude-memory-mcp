@@ -11,7 +11,7 @@ A long-term memory system for Claude, built as a Model Context Protocol (MCP) se
 - **Holographic Retrieval**: Retrieves not just nodes, but their full connected context ("The Hologram").
 - **Autonomous Maintenance**: "The Librarian" agent runs periodically to cluster related memories and synthesize higher-order concepts.
 - **Visual Dashboard**: A Streamlit UI to explore the memory graph interactively.
-- **Strict Quality**: 100% Mypy typed, 100% Test Coverage on logic.
+- **Strict Quality**: 100% Mypy typed, 784 unit tests, mutation testing (3-evil/1-sad/1-happy per function).
 
 ## 🛠️ Architecture
 

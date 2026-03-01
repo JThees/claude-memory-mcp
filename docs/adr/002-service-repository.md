@@ -13,4 +13,4 @@
 
 - Each layer is independently testable with mocking.
 - New tools can be added without touching data access code.
-- 460+ unit tests validate all layers in isolation.
+- 780+ unit tests validate all layers in isolation.

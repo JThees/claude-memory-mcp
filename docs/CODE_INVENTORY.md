@@ -1,6 +1,6 @@
 # Code Inventory
 
-A manifest of the project structure. Last updated: February 14, 2026.
+A manifest of the project structure. Last updated: March 2, 2026.
 
 ## Core Logic (`src/claude_memory/`)
 
@@ -45,50 +45,65 @@ A manifest of the project structure. Last updated: February 14, 2026.
 
 ## Tests (`tests/`)
 
-| File                              | Coverage                                                        |
-| --------------------------------- | --------------------------------------------------------------- |
-| `test_schema.py`                  | Pydantic model validation (top-level).                          |
-| **Unit Tests**                    |                                                                 |
-| `unit/test_entity_lifecycle.py`   | CRUD operations.                                                |
-| `unit/test_hologram.py`           | Retrieval logic (Search + Subgraph).                            |
-| `unit/test_librarian.py`          | Autonomous interaction logic + gap detection.                   |
-| `unit/test_clustering.py`         | DBSCAN wrapper + structural gap detection.                      |
-| `unit/test_interfaces.py`         | Protocol compliance.                                            |
-| `unit/test_embedding_filter.py`   | **Safety Check**. Verifies embedding stripping ("The Bouncer"). |
-| `unit/test_server.py`             | MCP tool wrappers + `main()` stdio transport.                   |
-| `unit/test_vector_store.py`       | Qdrant client, collection init, search, MMR, error re-raise.    |
-| `unit/test_validation.py`         | Pydantic model validation.                                      |
-| `unit/test_tools_coverage.py`     | Comprehensive MemoryService method coverage.                    |
-| `unit/test_consolidate_errors.py` | Memory consolidation error accumulation (P-1 fix).              |
-| `unit/test_embedding_retry.py`    | Embedding CUDA context retry logic (R-4 fix).                   |
-| `unit/test_embedding_coverage.py` | Embedding service edge cases.                                   |
-| `unit/test_embedding_client.py`   | Embedding client integration.                                   |
-| `unit/test_embedding_server.py`   | Embedding HTTP server.                                          |
-| `unit/test_lock_manager.py`       | Lock acquisition, release, TTL expiry (Redis path).             |
-| `unit/test_lock_fallback.py`      | Lock fallback (file-based path).                                |
-| `unit/test_locking.py`            | Concurrent locking scenarios.                                   |
-| `unit/test_retry.py`              | Retry decorator logic.                                          |
-| `unit/test_ontology.py`           | Custom type registration.                                       |
-| `unit/test_logging_config.py`     | Logging setup.                                                  |
-| `unit/test_memory_service.py`     | MemoryService integration tests (search, salience, gaps).       |
-| `unit/test_repository.py`         | FalkorDB repository layer.                                      |
-| `unit/test_activation.py`         | Spreading activation engine (decay, inhibition, ranking).       |
-| `unit/test_router.py`             | Query intent classification + routing.                          |
-| `unit/test_temporal.py`           | Temporal query and neighbor retrieval.                          |
-| `unit/test_backfill_temporal.py`  | Temporal migration script tests.                                |
-| `unit/test_session.py`            | Session lifecycle (start, end, breakthroughs).                  |
-| `unit/test_context.py`            | Context manager tests.                                          |
-| `unit/test_search_associative.py` | Associative search with spreading activation.                   |
-| `unit/test_graph_traversal.py`    | Path finding and cross-domain patterns.                         |
-| `unit/test_full_workflow.py`      | Multi-step workflow scenarios.                                  |
-| `unit/test_edge_cases.py`         | Edge case coverage.                                             |
-| `unit/test_dynamic_validation.py` | Dynamic Pydantic model validation.                              |
-| `unit/test_phase4.py`             | Phase 4 regression tests.                                       |
-| `unit/test_dashboard.py`          | Dashboard rendering.                                            |
-| `unit/test_dashboard_app.py`      | Dashboard app integration.                                      |
-| `unit/test_backup_restore.py`     | Backup/restore script tests.                                    |
-| `unit/test_crud_split_brain.py`   | W3 strict consistency tests (Qdrant-down behavior).             |
-| `unit/test_librarian_repro.py`    | Librarian edge case reproductions.                              |
+| File                                    | Coverage                                                        |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `test_schema.py`                        | Pydantic model validation (top-level).                          |
+| **Unit Tests**                          |                                                                 |
+| `unit/test_entity_lifecycle.py`         | CRUD operations.                                                |
+| `unit/test_hologram.py`                 | Retrieval logic (Search + Subgraph).                            |
+| `unit/test_librarian.py`                | Autonomous interaction logic + gap detection.                   |
+| `unit/test_clustering.py`               | DBSCAN wrapper + structural gap detection.                      |
+| `unit/test_interfaces.py`               | Protocol compliance.                                            |
+| `unit/test_embedding_filter.py`         | **Safety Check**. Verifies embedding stripping ("The Bouncer"). |
+| `unit/test_server.py`                   | MCP tool wrappers + `main()` stdio transport.                   |
+| `unit/test_vector_store.py`             | Qdrant client, collection init, search, MMR, error re-raise.    |
+| `unit/test_validation.py`               | Pydantic model validation.                                      |
+| `unit/test_analyze_graph.py`            | Graph algorithm tool wrappers (PageRank, Louvain).              |
+| `unit/test_archive_vector_cleanup.py`   | Archive/prune vector lifecycle cleanup.                         |
+| `unit/test_coverage_gaps.py`            | Coverage gap identification tests.                              |
+| `unit/test_prune_stale_vectors.py`      | Stale vector pruning logic.                                     |
+| `unit/test_consolidate_errors.py`       | Memory consolidation error accumulation (P-1 fix).              |
+| `unit/test_embedding_retry.py`          | Embedding CUDA context retry logic (R-4 fix).                   |
+| `unit/test_embedding_coverage.py`       | Embedding service edge cases.                                   |
+| `unit/test_embedding_client.py`         | Embedding client integration.                                   |
+| `unit/test_embedding_server.py`         | Embedding HTTP server.                                          |
+| `unit/test_lock_fallback.py`            | Lock fallback (file-based path).                                |
+| `unit/test_locking.py`                  | Concurrent locking scenarios.                                   |
+| `unit/test_retry.py`                    | Retry decorator logic.                                          |
+| `unit/test_ontology.py`                 | Custom type registration.                                       |
+| `unit/test_logging_config.py`           | Logging setup.                                                  |
+| `unit/test_memory_service.py`           | MemoryService integration tests (search, salience, gaps).       |
+| `unit/test_repository.py`               | FalkorDB repository layer.                                      |
+| `unit/test_activation.py`               | Spreading activation engine (decay, inhibition, ranking).       |
+| `unit/test_router.py`                   | Query intent classification + routing.                          |
+| `unit/test_temporal.py`                 | Temporal query and neighbor retrieval.                          |
+| `unit/test_backfill_temporal.py`        | Temporal migration script tests.                                |
+| `unit/test_session.py`                  | Session lifecycle (start, end, breakthroughs).                  |
+| `unit/test_context.py`                  | Context manager tests.                                          |
+| `unit/test_search_associative.py`       | Associative search with spreading activation.                   |
+| `unit/test_graph_traversal.py`          | Path finding and cross-domain patterns.                         |
+| `unit/test_full_workflow.py`            | Multi-step workflow scenarios.                                  |
+| `unit/test_edge_cases.py`               | Edge case coverage.                                             |
+| `unit/test_dynamic_validation.py`       | Dynamic Pydantic model validation.                              |
+| `unit/test_phase4.py`                   | Phase 4 regression tests.                                       |
+| `unit/test_dashboard.py`                | Dashboard rendering.                                            |
+| `unit/test_dashboard_app.py`            | Dashboard app integration.                                      |
+| `unit/test_backup_restore.py`           | Backup/restore script tests.                                    |
+| `unit/test_crud_split_brain.py`         | W3 strict consistency tests (Qdrant-down behavior).             |
+| `unit/test_librarian_repro.py`          | Librarian edge case reproductions.                              |
+| **Mutation Killers**                    |                                                                 |
+| `unit/test_mutant_schema_enums.py`      | EdgeType + CertaintyLevel enum membership.                      |
+| `unit/test_mutant_ontology.py`          | DEFAULT_ONTOLOGY type/description assertions.                   |
+| `unit/test_mutant_router.py`            | Router keywords, QueryIntent, classification.                   |
+| `unit/test_mutant_pydantic_defaults.py` | Pydantic model default values (12 models).                      |
+| `unit/test_mutant_dict_crud.py`         | Entity creation props + receipt dict values.                    |
+| `unit/test_mutant_dict_services.py`     | Health/diagnostics/session/breakthrough dicts.                  |
+| `unit/test_mutant_config_defaults.py`   | Config/env var/retry backoff defaults.                          |
+| `unit/test_mutant_default_params.py`    | Function signature default parameters.                          |
+| `unit/test_mutant_graph_algorithms.py`  | PageRank/Louvain math and edge cases.                           |
+| `unit/test_mutant_clustering.py`        | DBSCAN/cosine similarity/gap detection.                         |
+| `unit/test_mutant_lock_manager.py`      | ProjectLock context manager behavior.                           |
+| `unit/test_mutant_temporal.py`          | end_session/get_bottles temporal logic.                         |
 
 ### E2E / UAT (`tests/`)
 
@@ -96,7 +111,7 @@ A manifest of the project structure. Last updated: February 14, 2026.
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `e2e_functional.py` | **Exhaustive UAT**. 31-phase, 74-check lifecycle against the live Docker stack (CRUD, search, relationships, observations, temporal, sessions, graph health, strict consistency, associative, hologram, consolidation, ontology, archive/prune, knowledge gaps, cleanup, split-brain, reconnect, router strategies, deep search, bottles, concurrent creates, PRECEDED_BY chain, error recovery, algorithm semantics, point-in-time). |
 
-**Total: 463 tests across 46 files, ~98% coverage.**
+**Total: 784 tests across 55 files, ~98% coverage.**
 
 ## Configuration
 

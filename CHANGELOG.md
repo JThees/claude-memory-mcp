@@ -30,6 +30,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   orphan vectors, indices, HNSW threshold).
 - `scripts/purge_ghost_vectors.py` (`6167ae6`) — Utility to remove orphan Qdrant
   vectors with no matching graph entity.
+- **Mutation Test Campaign** (`1b633cf`) — 12 new `test_mutant_*.py` files
+  targeting mutation survival patterns (schema enums, ontology, router,
+  Pydantic defaults, dict values, config defaults, default params, graph
+  algorithms, clustering, lock manager, temporal).
 
 ### Fixed
 
@@ -50,5 +54,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - E2E test suite expanded from 18 to 26 phases.
-- Unit test suite: 460 tests, 0 failures.
+- Unit test suite: **784 tests** across 55 files, 0 failures.
 - Pre-commit hooks: ruff, ruff-format, codespell, detect-secrets all passing.

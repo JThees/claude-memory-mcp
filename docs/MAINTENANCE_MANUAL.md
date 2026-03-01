@@ -1,6 +1,6 @@
 # Maintenance Manual
 
-Guidelines for keeping the Exocortex healthy and performant. Last updated: February 14, 2026.
+Guidelines for keeping the Exocortex healthy and performant. Last updated: March 2, 2026.
 
 ## 🧹 The Librarian Agent
 

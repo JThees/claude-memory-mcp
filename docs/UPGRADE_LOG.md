@@ -252,8 +252,8 @@ The system at Phase 3 completion had:
 | --------------------- | ------------------ | -------------------------------------------------- | ----- |
 | **MCP Tools**         | 17                 | 29                                                 | +12   |
 | **Source Modules**    | 14                 | 29                                                 | +15   |
-| **Unit Tests**        | 255                | 463                                                | +208  |
-| **Test Files**        | 15                 | 46                                                 | +31   |
+| **Unit Tests**        | 255                | 784                                                | +529  |
+| **Test Files**        | 15                 | 55                                                 | +40   |
 | **Scripts**           | 12                 | 42                                                 | +30   |
 | **Tox Tiers**         | 4                  | 5                                                  | +1    |
 | **Search Strategies** | 1 (vector)         | 4 (semantic, associative, temporal, relational)    | +3    |
