@@ -42,6 +42,17 @@ mock_network = MagicMock()
 @pytest.fixture(autouse=True)
 def _patch_dashboard_deps(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch all heavy dashboard dependencies before test execution."""
+    # Reset module-level mocks to prevent cross-test state leakage
+    # (e.g. exhausted side_effect iterators causing StopIteration)
+    mock_st.reset_mock()
+    mock_components.reset_mock()
+    mock_network.reset_mock()
+    # reset_mock() doesn't reliably clear side_effect on nested child mocks,
+    # so we must explicitly clear the known offenders:
+    mock_st.sidebar.button.side_effect = None
+    mock_st.sidebar.button.return_value = False
+    mock_st.button.side_effect = None
+    mock_st.button.return_value = False
     monkeypatch.setitem(sys.modules, "streamlit", mock_st)
     monkeypatch.setitem(sys.modules, "streamlit.components", MagicMock())
     monkeypatch.setitem(sys.modules, "streamlit.components.v1", mock_components)
