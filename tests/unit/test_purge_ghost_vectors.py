@@ -8,16 +8,14 @@ Covers:
 
 from __future__ import annotations
 
-import asyncio
+import os
+import sys
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 # Import under controlled env
-import os
-import sys
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 os.environ.setdefault("QDRANT_HOST", "localhost")
 os.environ.setdefault("QDRANT_PORT", "6333")
@@ -28,7 +26,6 @@ from scripts.purge_ghost_vectors import (
     _find_ghost_ids,
     _find_orphan_ids,
     _get_all_graph_ids,
-    _report_ids,
     _scroll_all_ids,
     main,
 )
