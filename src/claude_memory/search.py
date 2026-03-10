@@ -154,7 +154,7 @@ class SearchMixin(SearchAdvancedMixin):
             n.pop("embedding", None)
         return nodes
 
-    async def search(  # noqa: PLR0913, C901
+    async def search(  # noqa: PLR0913
         self,
         query: str,
         limit: int = 5,
@@ -171,114 +171,137 @@ class SearchMixin(SearchAdvancedMixin):
         - ``'semantic'`` / ``'associative'`` / ``'temporal'`` / ``'relational'``
         When ``strategy`` is None, uses direct vector search (default).
         """
-        from .router import QueryIntent  # noqa: PLC0415
-        from .schema import SearchResult  # noqa: PLC0415
-
         if not query:
             return []
 
-        # Route through QueryRouter if strategy is specified
         try:
             if strategy is not None:
-                intent = None if strategy == "auto" else QueryIntent(strategy)
-                results = await self.router.route(
-                    query,
-                    self,  # type: ignore[arg-type]  # self is MemoryService at runtime
-                    intent=intent,
-                    limit=limit,
-                    project_id=project_id,
-                )
-                # router.route may return dicts (temporal/relational) or SearchResults
-                if results and isinstance(results[0], dict):
-                    return [
-                        SearchResult(
-                            id=r.get("id", ""),
-                            name=r.get("name", "Unknown"),
-                            node_type=r.get("node_type", "Entity"),
-                            project_id=r.get("project_id", "unknown"),
-                            content=r.get("description", ""),
-                            score=0.0,
-                            distance=0.0,
-                        )
-                        for r in results
-                    ]
-                return results
+                return await self._route_strategy_search(query, strategy, limit, project_id)
 
-            # 1. Embed Query
-            vec = self.embedder.encode(query)
-
-            # 2. Search Qdrant (Vector Engine)
-            search_filter: dict[str, Any] | None = None
-            if project_id:
-                search_filter = {"project_id": project_id}
-
-            if mmr:
-                vector_results = await self.vector_store.search_mmr(
-                    vector=vec, limit=limit, filter=search_filter
-                )
-            else:
-                vector_results = await self.vector_store.search(
-                    vector=vec, limit=limit, filter=search_filter, offset=offset
-                )
-
+            vector_results = await self._execute_vector_search(
+                query, limit, project_id, offset, mmr
+            )
             if not vector_results:
                 return []
 
-            # 3. Hydrate from Graph
-            # We have IDs, fetch full nodes.
-            ids = [item["_id"] for item in vector_results]
-
-            # We can use get_subgraph with depth 0 (or 1 for deep) to get nodes
-            graph_depth = 1 if deep else 0
-            graph_data = self.repo.get_subgraph(ids, depth=graph_depth)
-            nodes_map = {n["id"]: n for n in graph_data["nodes"]}
-
-            # 4. Fire-and-forget salience update (non-blocking)
-            self._fire_salience_update(ids)  # type: ignore[attr-defined]
-            salience_map = {
-                nid: props.get("salience_score", 0.0) for nid, props in nodes_map.items()
-            }
-
-            results = []
-            for v_res in vector_results:
-                node_id = v_res["_id"]
-                if node_id in nodes_map:
-                    node_props = nodes_map[node_id]
-
-                    # E-2: Deep hydration
-                    observations: list[str] = []
-                    relationships: list[dict[str, str]] = []
-                    if deep:
-                        obs_query = (
-                            "MATCH (e:Entity {id: $eid})-[:HAS_OBSERVATION]->(o) "
-                            "RETURN o.content ORDER BY o.created_at ASC"
-                        )
-                        obs_res = self.repo.execute_cypher(obs_query, {"eid": node_id})
-                        observations = [row[0] for row in obs_res.result_set if row[0]]
-                        relationships = [
-                            e
-                            for e in graph_data["edges"]
-                            if e.get("src") == node_id or e.get("dst") == node_id
-                        ]
-
-                    results.append(
-                        SearchResult(
-                            id=node_id,
-                            name=node_props.get("name", "Unknown"),
-                            node_type=node_props.get("node_type", "Entity"),
-                            project_id=node_props.get("project_id", "unknown"),
-                            content=node_props.get("description", ""),
-                            score=v_res["_score"],
-                            distance=1.0 - v_res["_score"],
-                            salience_score=salience_map.get(
-                                node_id,
-                                node_props.get("salience_score", 0.0),
-                            ),
-                            observations=observations,
-                            relationships=relationships,
-                        )
-                    )
-            return results
+            return self._hydrate_search_results(vector_results, deep)
         except (ConnectionError, TimeoutError, OSError, ValueError):
             logger.error("search failed for query=%r", query, exc_info=True)
             return []
+
+    async def _route_strategy_search(
+        self,
+        query: str,
+        strategy: str,
+        limit: int,
+        project_id: str | None,
+    ) -> list["SearchResult"]:
+        """Dispatch search through QueryRouter when a strategy is specified."""
+        from .router import QueryIntent  # noqa: PLC0415
+        from .schema import SearchResult  # noqa: PLC0415
+
+        intent = None if strategy == "auto" else QueryIntent(strategy)
+        results = await self.router.route(
+            query,
+            self,  # type: ignore[arg-type]  # self is MemoryService at runtime
+            intent=intent,
+            limit=limit,
+            project_id=project_id,
+        )
+        # router.route may return dicts (temporal/relational) or SearchResults
+        if results and isinstance(results[0], dict):
+            return [
+                SearchResult(
+                    id=r.get("id", ""),
+                    name=r.get("name", "Unknown"),
+                    node_type=r.get("node_type", "Entity"),
+                    project_id=r.get("project_id", "unknown"),
+                    content=r.get("description", ""),
+                    score=0.0,
+                    distance=0.0,
+                )
+                for r in results
+            ]
+        return results
+
+    async def _execute_vector_search(
+        self,
+        query: str,
+        limit: int,
+        project_id: str | None,
+        offset: int,
+        mmr: bool,
+    ) -> list[dict[str, Any]]:
+        """Embed query and search Qdrant (standard or MMR)."""
+        vec = self.embedder.encode(query)
+
+        search_filter: dict[str, Any] | None = None
+        if project_id:
+            search_filter = {"project_id": project_id}
+
+        if mmr:
+            return await self.vector_store.search_mmr(vector=vec, limit=limit, filter=search_filter)
+        return await self.vector_store.search(
+            vector=vec, limit=limit, filter=search_filter, offset=offset
+        )
+
+    def _hydrate_search_results(
+        self,
+        vector_results: list[dict[str, Any]],
+        deep: bool,
+    ) -> list["SearchResult"]:
+        """Hydrate vector hits from graph and build SearchResult list."""
+        from .schema import SearchResult  # noqa: PLC0415
+
+        ids = [item["_id"] for item in vector_results]
+
+        graph_depth = 1 if deep else 0
+        graph_data = self.repo.get_subgraph(ids, depth=graph_depth)
+        nodes_map = {n["id"]: n for n in graph_data["nodes"]}
+
+        # Fire-and-forget salience update (non-blocking)
+        self._fire_salience_update(ids)  # type: ignore[attr-defined]
+        salience_map = {nid: props.get("salience_score", 0.0) for nid, props in nodes_map.items()}
+
+        results = []
+        for v_res in vector_results:
+            node_id = v_res["_id"]
+            if node_id not in nodes_map:
+                continue
+
+            node_props = nodes_map[node_id]
+
+            # E-2: Deep hydration
+            observations: list[str] = []
+            relationships: list[dict[str, str]] = []
+            if deep:
+                obs_query = (
+                    "MATCH (e:Entity {id: $eid})-[:HAS_OBSERVATION]->(o) "
+                    "RETURN o.content ORDER BY o.created_at ASC"
+                )
+                obs_res = self.repo.execute_cypher(obs_query, {"eid": node_id})
+                observations = [row[0] for row in obs_res.result_set if row[0]]
+                relationships = [
+                    e
+                    for e in graph_data["edges"]
+                    if e.get("src") == node_id or e.get("dst") == node_id
+                ]
+
+            results.append(
+                SearchResult(
+                    id=node_id,
+                    name=node_props.get("name", "Unknown"),
+                    node_type=node_props.get("node_type", "Entity"),
+                    project_id=node_props.get("project_id", "unknown"),
+                    content=node_props.get("description", ""),
+                    score=v_res["_score"],
+                    distance=1.0 - v_res["_score"],
+                    salience_score=salience_map.get(
+                        node_id,
+                        node_props.get("salience_score", 0.0),
+                    ),
+                    observations=observations,
+                    relationships=relationships,
+                )
+            )
+        return results
