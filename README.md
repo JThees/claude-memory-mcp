@@ -38,7 +38,7 @@ docker-compose up -d
 This spins up 4 containers:
 - **FalkorDB** (knowledge graph) on port 6379
 - **Qdrant** (vector search) on port 6333
-- **Embedding API** (sentence-transformers) on port 8001
+- **Embedding API** (sentence-transformers, CPU by default) on port 8001
 - **Streamlit Dashboard** on port 8501
 
 ### 2. Connect Claude Desktop
@@ -165,6 +165,15 @@ streamlit run src/dashboard/app.py
 
 ```bash
 claude mcp add claude-memory -- python -m claude_memory.server
+```
+
+For environment variables, create a `.env` file or export them:
+
+```bash
+export FALKORDB_HOST=localhost
+export FALKORDB_PORT=6379
+export QDRANT_HOST=localhost
+export EMBEDDING_API_URL=http://localhost:8001
 ```
 
 ## Contributing
