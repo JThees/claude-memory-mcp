@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - **Dragon Brain Gauntlet** — 20-round automated quality audit. Scored A- (95/100).
-  See [spec](DRAGON_BRAIN_GAUNTLET.md) and [results](../GAUNTLET_RESULTS.md).
+  See [spec](DRAGON_BRAIN_GAUNTLET.md) and [results](GAUNTLET_RESULTS.md).
 - **Security hardening** — hardcoded password removed, PII scrubbed, git history
   rewritten via `git filter-repo`. `mcp_config.json` → `mcp_config.example.json`.
 - **CI pipeline** — GitHub Actions workflow (`.github/workflows/ci.yml`) running

@@ -127,7 +127,7 @@ This isn't a weekend hack. It's tested like production software:
 - **Security audit** — Cypher injection audit, credential scanning
 - **Dragon Brain Gauntlet** — 20-round automated quality audit, **A- (95/100)**
 
-Full gauntlet results: [GAUNTLET_RESULTS.md](GAUNTLET_RESULTS.md)
+Full gauntlet results: [GAUNTLET_RESULTS.md](docs/GAUNTLET_RESULTS.md)
 
 ## Documentation
 

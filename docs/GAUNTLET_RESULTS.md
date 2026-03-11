@@ -1,6 +1,6 @@
 # Dragon Brain Gauntlet — Results
 
-> A 20-round automated quality audit covering unit tests, fuzzing, security, performance, architecture, and live data integrity. See [the spec](docs/DRAGON_BRAIN_GAUNTLET.md) for methodology.
+> A 20-round automated quality audit covering unit tests, fuzzing, security, performance, architecture, and live data integrity. See [the spec](DRAGON_BRAIN_GAUNTLET.md) for methodology.
 
 **Date:** 2026-03-10
 **Runner:** Antigravity (local execution with Docker)

@@ -122,7 +122,7 @@ Core CRUD, search, session, and graph analysis tools.
 | `test_concurrent.py` | Concurrency stress — thread/async safety (4 tests). |
 | `test_mcp_contracts.py` | Contract testing — MCP tool input/output schemas (30 tests). |
 
-Spec: [DRAGON_BRAIN_GAUNTLET.md](DRAGON_BRAIN_GAUNTLET.md) | Results: [GAUNTLET_RESULTS.md](../GAUNTLET_RESULTS.md) | Score: **A- (95/100)**
+Spec: [DRAGON_BRAIN_GAUNTLET.md](DRAGON_BRAIN_GAUNTLET.md) | Results: [GAUNTLET_RESULTS.md](GAUNTLET_RESULTS.md) | Score: **A- (95/100)**
 
 ## Configuration
 
