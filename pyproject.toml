@@ -157,6 +157,7 @@ asyncio_mode = "auto"
 addopts = "-v"
 filterwarnings = [
     "ignore::coverage.exceptions.CoverageWarning",
+    "ignore::requests.exceptions.RequestsDependencyWarning",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
